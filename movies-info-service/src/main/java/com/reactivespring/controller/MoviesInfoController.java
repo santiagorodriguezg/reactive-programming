@@ -9,6 +9,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoExtensionsKt;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/v1")
 public class MoviesInfoController {
@@ -30,7 +32,7 @@ public class MoviesInfoController {
 
     @PostMapping("/movieinfos")
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<MovieInfo> addMovieInfo(@RequestBody MovieInfo movieInfo){
+    public Mono<MovieInfo> addMovieInfo(@RequestBody @Valid MovieInfo movieInfo){
 
        return moviesInfoService.addMovieInfo(movieInfo).log();
 
@@ -39,10 +41,9 @@ public class MoviesInfoController {
 
 
     @PutMapping("/movieinfos/{id}")
-    @ResponseStatus(HttpStatus.CREATED)
     public Mono<MovieInfo> updateMovieInfo(@RequestBody MovieInfo updatedMovieInfo, @PathVariable String id){
 
-        return moviesInfoService.updateMovieInfo(updatedMovieInfo, id);
+        return moviesInfoService.updateMovieInfo(updatedMovieInfo, id).log();
 
 
     }
