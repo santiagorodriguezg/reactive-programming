@@ -10,6 +10,8 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.util.UriComponentsBuilder;
+import reactor.test.StepVerifier;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -51,6 +53,20 @@ public class MoviesInfoControllerIntgTest {
 
 
     @Test
+    void getMovieInfo_notfound(){
+        var id = "def";
+
+        webTestClient
+                .get()
+                .uri(MOVIES_INFO_URL+ "/{id}", id)
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+
+    }
+
+
+    @Test
     void addMovieInfo(){
 
         var movieInfo = new MovieInfo(null, "Batman Begins111",
@@ -73,7 +89,7 @@ public class MoviesInfoControllerIntgTest {
     }
 
     @Test
-    void gelAllMovieInfos() {
+    void getAllMovieInfos() {
 
         webTestClient
                 .get()
@@ -83,6 +99,24 @@ public class MoviesInfoControllerIntgTest {
                 .is2xxSuccessful()
                 .expectBodyList(MovieInfo.class)
                 .hasSize(3);
+
+    }
+
+    @Test
+    void getMovieInfoByYear() {
+
+     var uri =   UriComponentsBuilder.fromUriString(MOVIES_INFO_URL)
+                        .queryParam("year", 2005)
+                                .buildAndExpand().toUri();
+
+        webTestClient
+                .get()
+                .uri(uri)
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBodyList(MovieInfo.class)
+                .hasSize(1);
 
     }
 
@@ -120,7 +154,30 @@ public class MoviesInfoControllerIntgTest {
                 .bodyValue(updatedMovieInfo)
                 .exchange()
                 .expectStatus()
-                .is2xxSuccessful();
+                .isNotFound();
+
     }
+
+    @Test
+    void findByYear() {
+
+        var moviesInfoFlux = movieInfoRepository.findByYear(2005).log();
+
+        StepVerifier.create(moviesInfoFlux)
+                .expectNextCount(1)
+                .verifyComplete();
+    }
+
+    @Test
+    void findByName() {
+
+        var moviesInfoMono = movieInfoRepository.findByName("The Dark Knight").log();
+
+        StepVerifier.create(moviesInfoMono)
+                .expectNextCount(1)
+                .verifyComplete();
+    }
+
+
     }
 
